@@ -53,3 +53,14 @@ func TestStorageClear(t *testing.T) {
 	_, err = SessionStorage.GetItem("bar")
 	assert.True(t, errors.Is(err, ErrKeyNotFound))
 }
+
+func TestStorageGetRawItem(t *testing.T) {
+	defer SessionStorage.Clear()
+
+	err := SessionStorage.SetRawItem("foo", 42)
+	assert.Nil(t, err)
+
+	v, err := SessionStorage.GetRawItem("foo")
+	assert.Nil(t, err)
+	assert.Equal(t, "42", v.String())
+}

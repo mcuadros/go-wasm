@@ -61,15 +61,14 @@ func (s *Storage) SetItem(key string, value interface{}) error {
 		return err
 	}
 
-	s.Call("setItem", key, string(data))
-	return nil
+	return s.SetRawItem(key, string(data))
 }
 
 // GetItem return that key's value, or ErrKeyNotFound if the key does not exist.
 func (s *Storage) GetItem(key string) (interface{}, error) {
-	item := s.Call("getItem", key)
-	if !item.Truthy() {
-		return nil, fmt.Errorf("%w: %q", ErrKeyNotFound, key)
+	item, err := s.GetRawItem(key)
+	if err != nil {
+		return nil, err
 	}
 
 	var value interface{}
@@ -85,4 +84,21 @@ func (s *Storage) RemoveItem(key string) {
 // Clear clears all keys stored in a given Storage object.
 func (s *Storage) Clear() {
 	s.Call("clear")
+}
+
+// SetRamItem when passed a key name and value, will add that key to the sStorage,
+// or update that key's value if it already exists.
+func (s *Storage) SetRawItem(key string, value interface{}) error {
+	s.Call("setItem", key, value)
+	return nil
+}
+
+// GetRawItem return that key's value, or ErrKeyNotFound if the key does not exist.
+func (s *Storage) GetRawItem(key string) (js.Value, error) {
+	item := s.Call("getItem", key)
+	if !item.Truthy() {
+		return js.Value{}, fmt.Errorf("%w: %q", ErrKeyNotFound, key)
+	}
+
+	return item, nil
 }
